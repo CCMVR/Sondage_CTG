@@ -79,6 +79,21 @@
             box-shadow: none;
             border-color: #e2e8f0;
         }
+
+        /* Admin Styles */
+        .admin-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .admin-overlay.active {
+            display: flex;
+        }
     </style>
     <script>
         tailwind.config = {
@@ -118,13 +133,11 @@
             <!-- ETAPE : Accueil -->
             <div class="step active" id="step-accueil">
                 <div class="text-center py-8">
-                    <!-- NOUVEAU : Zone pour les logos -->
+                    <!-- NOUVEAU : Zone pour les logos avec liens locaux -->
                     <div class="flex items-center justify-center gap-6 mb-8">
-                        <!-- Remplacez le src par le chemin de votre logo sur Github (ex: ./logo-collectivite.png) -->
-                        <img src="https://placehold.co/150x60/f8fafc/0ea5e9?text=Votre+Logo" alt="Logo Collectivité" class="h-16 object-contain">
+                        <img src="./logo-collectivite.png" alt="Logo Collectivité" class="h-16 object-contain" onerror="this.src='https://placehold.co/150x60/f8fafc/0ea5e9?text=Logo+Collectivité'">
                         <div class="h-12 w-px bg-slate-300"></div>
-                        <!-- Remplacez le src par le chemin de votre logo CAF (ex: ./logo-caf.png) -->
-                        <img src="https://upload.wikimedia.org/wikipedia/fr/thumb/2/23/Logo_CAF.svg/512px-Logo_CAF.svg.png" alt="Logo CAF Haute-Loire" class="h-16 object-contain">
+                        <img src="./logo-caf.png" alt="Logo CAF Haute-Loire" class="h-16 object-contain" onerror="this.src='https://placehold.co/150x60/f8fafc/0ea5e9?text=Logo+CAF'">
                     </div>
 
                     <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-blue-50 text-primary mb-6">
@@ -287,12 +300,99 @@
                 </div>
             </div>
 
-            <!-- Messages d'erreur -->
+            <!-- Messages d'erreur globaux -->
             <div id="error-message" class="hidden absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-red-100 text-red-700 px-6 py-3 rounded-xl text-sm font-semibold shadow-lg transition-opacity z-50 text-center w-max max-w-full">
                 Message d'erreur
             </div>
         </div>
     </main>
+
+    <!-- Icône discrète d'accès Admin (en bas à droite) -->
+    <div onclick="openAdminLogin()" class="fixed bottom-4 right-4 text-slate-300 hover:text-slate-400 cursor-pointer z-40 transition-colors" title="Accès restreint">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+        </svg>
+    </div>
+
+    <!-- Modal Connexion Admin -->
+    <div id="admin-login-modal" class="admin-overlay">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm relative transform transition-all">
+            <button onclick="closeAdminLogin()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h3 class="text-2xl font-bold text-slate-800 mb-2">Administration</h3>
+            <p class="text-slate-500 mb-6 text-sm">Veuillez saisir la clé d'accès.</p>
+            <input type="password" id="admin-pwd" placeholder="Mot de passe" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-primary focus:ring-0 mb-4" onkeypress="if(event.key === 'Enter') loginAdmin()">
+            <button onclick="loginAdmin()" class="w-full bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-slate-800 transition-colors">Déverrouiller</button>
+        </div>
+    </div>
+
+    <!-- Dashboard Admin -->
+    <div id="admin-dashboard" class="admin-overlay p-4 sm:p-8">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-6xl h-full flex flex-col overflow-hidden">
+            <!-- Header Admin -->
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    Tableau de Bord
+                </h2>
+                <div class="flex gap-3">
+                    <button onclick="exportCSV()" class="bg-green-100 text-green-700 hover:bg-green-200 font-semibold px-4 py-2 rounded-lg text-sm transition-colors flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        Exporter (.csv)
+                    </button>
+                    <button onclick="closeAdminDashboard()" class="bg-slate-200 text-slate-700 hover:bg-slate-300 font-semibold px-4 py-2 rounded-lg text-sm transition-colors">Fermer</button>
+                </div>
+            </div>
+
+            <!-- Onglets -->
+            <div class="flex border-b border-slate-200 px-6">
+                <button onclick="switchAdminTab('reponses')" id="tab-reponses" class="px-4 py-3 border-b-2 border-primary text-primary font-semibold">Réponses (Bilan)</button>
+                <button onclick="switchAdminTab('idees')" id="tab-idees" class="px-4 py-3 border-b-2 border-transparent text-slate-500 font-medium hover:text-slate-700">Idées (Perspectives)</button>
+            </div>
+
+            <!-- Contenu des tables -->
+            <div class="flex-grow overflow-auto p-6 bg-slate-50/50">
+                
+                <!-- Table Réponses -->
+                <div id="admin-view-reponses">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-xs font-semibold text-slate-500 uppercase border-b border-slate-200">
+                                <th class="pb-3 px-2">Date</th>
+                                <th class="pb-3 px-2">Structure</th>
+                                <th class="pb-3 px-2">Thème</th>
+                                <th class="pb-3 px-2">Évaluation</th>
+                                <th class="pb-3 px-2">Point Fort</th>
+                                <th class="pb-3 px-2 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-reponses" class="text-sm text-slate-700">
+                            <!-- JS Generated -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Table Idées -->
+                <div id="admin-view-idees" class="hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-xs font-semibold text-slate-500 uppercase border-b border-slate-200">
+                                <th class="pb-3 px-2">Thème</th>
+                                <th class="pb-3 px-2">Mot / Idée</th>
+                                <th class="pb-3 px-2">Votes</th>
+                                <th class="pb-3 px-2 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-idees" class="text-sm text-slate-700">
+                            <!-- JS Generated -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
     <script>
         // --- DONNÉES ET ÉTAT ---
@@ -304,7 +404,6 @@
             'acces_droit': { label: 'Accès au droit', icon: '⚖️' }
         };
 
-        // Base de données simulée pour le premier chargement du nuage de mots
         var DEFAULT_DB = {
             'petite_enfance': {'Crèches': 8, 'Assistantes maternelles': 5, 'Parcs': 3, 'Relais petite enfance': 6, 'Pédiatres': 2},
             'enfance': {'Cantine bio': 7, 'Activités périscolaires': 12, 'Sécurité abords école': 6, 'Soutien scolaire': 4},
@@ -313,14 +412,10 @@
             'acces_droit': {'Permanences juridiques': 10, 'Aide numérique': 14, 'Maison France Service': 8, 'Mobilité': 6}
         };
 
-        // Configuration Supabase
         var supabaseUrl = 'https://bnloivgpihtsxydjkgyc.supabase.co';
         var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJubG9pdmdwaWh0c3h5ZGprZ3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDY4MjIsImV4cCI6MjA4Njk4MjgyMn0.U1p2xnYLprSO8-w-6mlG9BMO4_-A916XGmsKQ5WkdEg';
-        // Utilisation d'un nom de variable différent (supabaseClient au lieu de supabase) 
-        // pour ne pas entrer en conflit avec l'objet global 'supabase' injecté par le CDN
         var supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        var STORAGE_KEY = 'survey_db_v1';
         var wordCloudDB = {};
         
         var state = {
@@ -330,10 +425,14 @@
             selectedVotes: []
         };
 
+        // --- VARIABLES ADMIN ---
+        var secretToken = ''; // Gardé en mémoire le temps de la session d'admin
+        var adminDataReponses = [];
+        var adminDataIdees = [];
+        var currentAdminTab = 'reponses';
+
         // --- INITIALISATION ---
         function initDB() {
-            // Plus besoin du localStorage pour l'initialisation. 
-            // Les données sont chargées depuis Supabase dynamiquement.
             wordCloudDB = {};
         }
 
@@ -365,22 +464,18 @@
 
             document.getElementById('completed-count').textContent = state.completedThemes.length;
             
-            // Si tout est complété, on va à la fin
             if (state.completedThemes.length === Object.keys(THEMES).length) {
                 goToStep('step-merci');
             }
         }
 
-        // --- NAVIGATION ET VALIDATION ---
+        // --- NAVIGATION PRINCIPALE ---
         function goToStep(stepId) {
             document.querySelectorAll('.step').forEach(el => {
                 if (el.id !== stepId) {
                     el.classList.remove('active');
                     setTimeout(() => {
-                        // On s'assure de ne pas cacher l'étape active
-                        if (!el.classList.contains('active')) {
-                            el.style.display = 'none';
-                        }
+                        if (!el.classList.contains('active')) el.style.display = 'none';
                     }, 400);
                 }
             });
@@ -388,7 +483,6 @@
             const nextStep = document.getElementById(stepId);
             nextStep.style.display = 'block';
             
-            // Un tout petit délai pour que le navigateur comprenne qu'il doit jouer l'animation CSS
             setTimeout(() => {
                 nextStep.classList.add('active');
                 const firstInput = nextStep.querySelector('input:not([type="radio"]):not([type="checkbox"]), textarea');
@@ -418,7 +512,6 @@
                 return;
             }
 
-            // Si on valide l'étape d'identification, on mémorise le nom de la structure
             if (currentStepId === 'step-identification') {
                 state.structureName = document.getElementById('structure_name').value.trim();
             }
@@ -433,41 +526,32 @@
             setTimeout(() => err.classList.add('hidden'), 3000);
         }
 
-        // --- LOGIQUE MÉTIER DES THÈMES ---
+        // --- LOGIQUE SONDAGE ---
         function startTheme(themeKey) {
             state.currentTheme = themeKey;
             const label = THEMES[themeKey].label;
             
-            // Mettre à jour les titres
             document.querySelectorAll('.theme-name-display').forEach(el => el.textContent = label);
             document.getElementById('idea-question').textContent = `Quel serait pour vous l'axe principal à développer sur ce mandat pour ${label.toLowerCase()} ?`;
             
-            // Réinitialiser les inputs du thème
             document.querySelectorAll('input[name="evaluation"]').forEach(r => r.checked = false);
             document.getElementById('point_fort').value = '';
-            
-            // Réinitialiser les votes pour ce nouveau thème
             state.selectedVotes = [];
             
             goToStep('step-bilan-eval');
         }
 
         function autoAdvanceEval() {
-            // Avance automatiquement à la question suivante après un clic
-            setTimeout(() => {
-                validateAndGoTo('step-bilan-eval', 'step-bilan-fort');
-            }, 300);
+            setTimeout(() => { validateAndGoTo('step-bilan-eval', 'step-bilan-fort'); }, 300);
         }
 
         async function prepareCloudAndGo() {
-            // Indique visuellement que ça charge
             const btn = document.querySelector('#step-bilan-fort button:last-child');
             const originalText = btn.innerHTML;
             btn.innerHTML = 'Chargement...';
             btn.disabled = true;
 
             try {
-                // On récupère les idées existantes pour ce thème depuis Supabase
                 const { data, error } = await supabaseClient
                     .from('SONDAGE_idees')
                     .select('mot, votes')
@@ -478,19 +562,16 @@
                 wordCloudDB[state.currentTheme] = {};
                 
                 if (data && data.length > 0) {
-                    data.forEach(item => {
-                        wordCloudDB[state.currentTheme][item.mot] = item.votes;
-                    });
+                    data.forEach(item => { wordCloudDB[state.currentTheme][item.mot] = item.votes; });
                 } else {
-                    // Si la BDD est vide pour ce thème, on charge les exemples par défaut
                     wordCloudDB[state.currentTheme] = JSON.parse(JSON.stringify(DEFAULT_DB[state.currentTheme] || {}));
                 }
 
                 renderWordCloud();
                 goToStep('step-perspective-cloud');
             } catch (err) {
-                console.error("Erreur de récupération :", err);
-                showError("Problème de connexion au serveur.");
+                console.error("Erreur :", err);
+                showError("Problème de connexion.");
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
@@ -502,23 +583,17 @@
             const idea = input.value.trim();
             
             if(!idea) {
-                showError("Veuillez écrire une idée avant de l'ajouter.");
+                showError("Veuillez écrire une idée.");
                 input.classList.add('border-red-400');
                 setTimeout(() => input.classList.remove('border-red-400'), 2000);
                 return;
             }
 
-            // Normalisation de l'idée (majuscule au début)
             const cleanIdea = idea.charAt(0).toUpperCase() + idea.slice(1).toLowerCase();
 
-            // Ajouter à l'interface locale (Sera envoyé lors de la validation finale)
             if(!wordCloudDB[state.currentTheme]) wordCloudDB[state.currentTheme] = {};
+            if(wordCloudDB[state.currentTheme][cleanIdea] === undefined) wordCloudDB[state.currentTheme][cleanIdea] = 0;
             
-            if(wordCloudDB[state.currentTheme][cleanIdea] === undefined) {
-                wordCloudDB[state.currentTheme][cleanIdea] = 0; // 0 vote initialement
-            }
-            
-            // On sélectionne l'idée automatiquement si on n'a pas dépassé les 3 votes
             if(state.selectedVotes.length < 3 && !state.selectedVotes.includes(cleanIdea)) {
                 state.selectedVotes.push(cleanIdea);
             } else if (!state.selectedVotes.includes(cleanIdea)) {
@@ -529,11 +604,9 @@
             renderWordCloud();
         }
 
-        // --- GESTION DU NUAGE DE MOTS ---
         function renderWordCloud() {
             const container = document.getElementById('word-cloud');
             container.innerHTML = '';
-            // Mise à jour du compteur visuel
             document.getElementById('vote-count').textContent = state.selectedVotes.length;
 
             const wordsObj = wordCloudDB[state.currentTheme] || {};
@@ -544,15 +617,12 @@
                 return;
             }
 
-            // Trouver le max (Math.max(..., 1) évite la division par zéro)
             const maxVotes = Math.max(...wordsArray.map(w => w[1]), 1);
-            
-            // Mélanger aléatoirement l'affichage pour un vrai effet "nuage"
             wordsArray.sort(() => Math.random() - 0.5);
 
             wordsArray.forEach(([word, count]) => {
                 const ratio = count / maxVotes;
-                const fontSize = 0.85 + (ratio * 1.1); // min 0.85rem, max 1.95rem
+                const fontSize = 0.85 + (ratio * 1.1);
                 const opacity = 0.6 + (ratio * 0.4);
 
                 const span = document.createElement('span');
@@ -561,7 +631,6 @@
                 span.style.opacity = opacity;
                 span.textContent = word;
                 
-                // On réapplique l'état de sélection s'il existe
                 if (state.selectedVotes.includes(word)) {
                     span.classList.add('selected');
                 } else if (state.selectedVotes.length >= 3) {
@@ -588,14 +657,11 @@
                 state.selectedVotes.push(word);
             }
 
-            // Mettre à jour le compteur et l'état visuel des autres boutons
             document.getElementById('vote-count').textContent = state.selectedVotes.length;
             
             const allWords = document.querySelectorAll('.word-tag');
             if (state.selectedVotes.length >= 3) {
-                allWords.forEach(el => {
-                    if (!el.classList.contains('selected')) el.classList.add('disabled');
-                });
+                allWords.forEach(el => { if (!el.classList.contains('selected')) el.classList.add('disabled'); });
             } else {
                 allWords.forEach(el => el.classList.remove('disabled'));
             }
@@ -608,7 +674,6 @@
             btn.disabled = true;
 
             try {
-                // 1. Sauvegarder le Bilan dans la base de données
                 const evaluation = document.querySelector('input[name="evaluation"]:checked')?.value;
                 const pointFort = document.getElementById('point_fort').value.trim();
 
@@ -621,7 +686,6 @@
 
                 if (repError) throw repError;
 
-                // 2. Sauvegarder les votes dans le nuage de mots via une fonction SQL sécurisée
                 for (const word of state.selectedVotes) {
                     const { error: voteError } = await supabaseClient.rpc('sondage_voter_idee', {
                         p_theme: state.currentTheme,
@@ -630,12 +694,10 @@
                     if (voteError) throw voteError;
                 }
 
-                // Marquer le thème comme terminé
                 if(!state.completedThemes.includes(state.currentTheme)) {
                     state.completedThemes.push(state.currentTheme);
                 }
                 
-                // Retourner au menu des thèmes
                 goToStep('step-themes');
 
             } catch (err) {
@@ -647,7 +709,196 @@
             }
         }
 
-        // Lancer l'initialisation au chargement
+        // --- FONCTIONS ADMINISTRATEUR ---
+
+        function openAdminLogin() {
+            document.getElementById('admin-login-modal').classList.add('active');
+            document.getElementById('admin-pwd').focus();
+        }
+
+        function closeAdminLogin() {
+            document.getElementById('admin-login-modal').classList.remove('active');
+            document.getElementById('admin-pwd').value = '';
+        }
+
+        function closeAdminDashboard() {
+            document.getElementById('admin-dashboard').classList.remove('active');
+            secretToken = ''; // Par sécurité, on efface le mot de passe quand on ferme
+        }
+
+        async function loginAdmin() {
+            const pwdInput = document.getElementById('admin-pwd');
+            const pwd = pwdInput.value;
+            
+            if(!pwd) return;
+
+            // On teste si le mot de passe est bon en essayant de charger les réponses
+            try {
+                const { data, error } = await supabaseClient.rpc('sondage_admin_get_reponses', { p_pwd: pwd });
+                if (error) throw error; // L'erreur sera déclenchée par Supabase si le mot de passe est faux
+
+                // Si on arrive ici, le mot de passe est validé par la BDD !
+                secretToken = pwd;
+                adminDataReponses = data;
+                
+                closeAdminLogin();
+                document.getElementById('admin-dashboard').classList.add('active');
+                
+                // Charger le reste des données
+                await loadAdminIdees();
+                renderAdminTables();
+                
+            } catch (err) {
+                console.error("Login failed:", err);
+                pwdInput.classList.add('border-red-500');
+                setTimeout(() => pwdInput.classList.remove('border-red-500'), 1000);
+            }
+        }
+
+        async function loadAdminIdees() {
+            try {
+                const { data, error } = await supabaseClient.rpc('sondage_admin_get_idees', { p_pwd: secretToken });
+                if (error) throw error;
+                adminDataIdees = data;
+            } catch(err) { console.error("Load idées error:", err); }
+        }
+
+        function switchAdminTab(tab) {
+            currentAdminTab = tab;
+            if(tab === 'reponses') {
+                document.getElementById('tab-reponses').className = "px-4 py-3 border-b-2 border-primary text-primary font-semibold";
+                document.getElementById('tab-idees').className = "px-4 py-3 border-b-2 border-transparent text-slate-500 font-medium hover:text-slate-700";
+                document.getElementById('admin-view-reponses').classList.remove('hidden');
+                document.getElementById('admin-view-idees').classList.add('hidden');
+            } else {
+                document.getElementById('tab-idees').className = "px-4 py-3 border-b-2 border-primary text-primary font-semibold";
+                document.getElementById('tab-reponses').className = "px-4 py-3 border-b-2 border-transparent text-slate-500 font-medium hover:text-slate-700";
+                document.getElementById('admin-view-idees').classList.remove('hidden');
+                document.getElementById('admin-view-reponses').classList.add('hidden');
+            }
+        }
+
+        function renderAdminTables() {
+            // Render Réponses
+            const tbodyRep = document.getElementById('tbody-reponses');
+            tbodyRep.innerHTML = '';
+            adminDataReponses.forEach(row => {
+                const date = new Date(row.created_at).toLocaleDateString('fr-FR');
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-100/50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-2">${date}</td>
+                    <td class="py-3 px-2 font-medium">${row.structure_name}</td>
+                    <td class="py-3 px-2">${THEMES[row.theme]?.label || row.theme}</td>
+                    <td class="py-3 px-2 capitalize">${row.evaluation}</td>
+                    <td class="py-3 px-2 max-w-xs truncate" title="${row.point_fort || ''}">${row.point_fort || '-'}</td>
+                    <td class="py-3 px-2 text-right">
+                        <button onclick="editAdminRecord('reponse', '${row.id}')" class="text-blue-500 hover:text-blue-700 text-sm mr-2">Éditer</button>
+                        <button onclick="deleteAdminRecord('reponse', '${row.id}')" class="text-red-500 hover:text-red-700 text-sm">Suppr.</button>
+                    </td>
+                `;
+                tbodyRep.appendChild(tr);
+            });
+
+            // Render Idées
+            const tbodyIdees = document.getElementById('tbody-idees');
+            tbodyIdees.innerHTML = '';
+            adminDataIdees.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-100/50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-3 px-2">${THEMES[row.theme]?.label || row.theme}</td>
+                    <td class="py-3 px-2 font-medium">${row.mot}</td>
+                    <td class="py-3 px-2"><span class="bg-blue-100 text-primary_dark px-2 py-1 rounded-md font-bold">${row.votes}</span></td>
+                    <td class="py-3 px-2 text-right">
+                        <button onclick="editAdminRecord('idee', '${row.id}')" class="text-blue-500 hover:text-blue-700 text-sm mr-2">Éditer</button>
+                        <button onclick="deleteAdminRecord('idee', '${row.id}')" class="text-red-500 hover:text-red-700 text-sm">Suppr.</button>
+                    </td>
+                `;
+                tbodyIdees.appendChild(tr);
+            });
+        }
+
+        async function deleteAdminRecord(type, id) {
+            if(!confirm("Êtes-vous sûr de vouloir supprimer cette ligne définitivement ?")) return;
+            
+            try {
+                if (type === 'reponse') {
+                    await supabaseClient.rpc('sondage_admin_delete_reponse', { p_pwd: secretToken, p_id: id });
+                    adminDataReponses = adminDataReponses.filter(r => r.id !== id);
+                } else {
+                    await supabaseClient.rpc('sondage_admin_delete_idee', { p_pwd: secretToken, p_id: id });
+                    adminDataIdees = adminDataIdees.filter(i => i.id !== id);
+                }
+                renderAdminTables();
+            } catch(err) {
+                alert("Erreur de suppression.");
+            }
+        }
+
+        async function editAdminRecord(type, id) {
+            try {
+                if (type === 'reponse') {
+                    const record = adminDataReponses.find(r => r.id === id);
+                    const newPointFort = prompt("Modifier le point fort :", record.point_fort || '');
+                    if (newPointFort !== null) {
+                        await supabaseClient.rpc('sondage_admin_update_reponse', { 
+                            p_pwd: secretToken, p_id: id, p_point_fort: newPointFort 
+                        });
+                        record.point_fort = newPointFort;
+                        renderAdminTables();
+                    }
+                } else {
+                    const record = adminDataIdees.find(i => i.id === id);
+                    const newMot = prompt("Modifier le mot :", record.mot);
+                    if (newMot === null) return;
+                    const newVotes = prompt("Modifier le nombre de votes :", record.votes);
+                    if (newVotes === null || isNaN(parseInt(newVotes))) return;
+
+                    await supabaseClient.rpc('sondage_admin_update_idee', { 
+                        p_pwd: secretToken, p_id: id, p_mot: newMot, p_votes: parseInt(newVotes)
+                    });
+                    record.mot = newMot;
+                    record.votes = parseInt(newVotes);
+                    renderAdminTables();
+                }
+            } catch(err) {
+                alert("Erreur lors de la modification.");
+            }
+        }
+
+        function exportCSV() {
+            const data = currentAdminTab === 'reponses' ? adminDataReponses : adminDataIdees;
+            if(!data || data.length === 0) {
+                alert("Rien à exporter.");
+                return;
+            }
+
+            const keys = Object.keys(data[0]);
+            const separator = ';'; // Idéal pour Excel en France
+            
+            const csvContent = keys.join(separator) + '\n' + data.map(row => {
+                return keys.map(k => {
+                    let cell = row[k] === null || row[k] === undefined ? '' : row[k];
+                    // Echapper les guillemets et retours à la ligne
+                    cell = cell.toString().replace(/"/g, '""');
+                    if (cell.search(/("|;|\n)/g) >= 0) cell = `"${cell}"`;
+                    return cell;
+                }).join(separator);
+            }).join('\n');
+
+            // Création du fichier avec l'entête BOM pour que Excel reconnaisse bien les accents (UTF-8)
+            const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Export_${currentAdminTab}_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Init
         initDB();
 
     </script>
