@@ -406,11 +406,14 @@
                 </svg>
             </button>
             <h3 class="text-2xl font-bold text-slate-800 mb-2">Administration</h3>
-            <p class="text-slate-500 mb-6 text-sm">Veuillez saisir la clé d'accès.</p>
+            <p class="text-slate-500 mb-6 text-sm">Veuillez saisir vos identifiants.</p>
+            <input type="text" id="admin-user" placeholder="Identifiant"
+                class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-primary focus:ring-0 mb-4"
+                onkeypress="if(event.key === 'Enter') document.getElementById('admin-pwd').focus()">
             <input type="password" id="admin-pwd" placeholder="Mot de passe"
                 class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-primary focus:ring-0 mb-4"
                 onkeypress="if(event.key === 'Enter') loginAdmin()">
-            <button onclick="loginAdmin()"
+            <button onclick="loginAdmin()" id="btn-login"
                 class="w-full bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-slate-800 transition-colors">Déverrouiller</button>
         </div>
     </div>
@@ -531,7 +534,6 @@
         };
 
         // --- VARIABLES ADMIN ---
-        var secretToken = ''; // Gardé en mémoire le temps de la session d'admin
         var adminDataReponses = [];
         var adminDataIdees = [];
         var currentAdminTab = 'reponses';
@@ -817,32 +819,54 @@
 
         function openAdminLogin() {
             document.getElementById('admin-login-modal').classList.add('active');
-            document.getElementById('admin-pwd').focus();
+            document.getElementById('admin-user').focus();
         }
 
         function closeAdminLogin() {
             document.getElementById('admin-login-modal').classList.remove('active');
+            document.getElementById('admin-user').value = '';
             document.getElementById('admin-pwd').value = '';
         }
 
         function closeAdminDashboard() {
             document.getElementById('admin-dashboard').classList.remove('active');
-            secretToken = ''; // Par sécurité, on efface le mot de passe quand on ferme
+            supabaseClient.auth.signOut();
         }
 
         async function loginAdmin() {
+            const userInput = document.getElementById('admin-user');
             const pwdInput = document.getElementById('admin-pwd');
+            const btnLogin = document.getElementById('btn-login');
+
+            const user = userInput.value.trim();
             const pwd = pwdInput.value;
 
-            if (!pwd) return;
+            if (!user || !pwd) return;
 
-            // On teste si le mot de passe est bon en essayant de charger les réponses
+            let email = user;
+            if (user.toLowerCase() === 'admin') {
+                email = 'admin@ccmvr.fr';
+            }
+
+            btnLogin.textContent = "Connexion...";
+            btnLogin.disabled = true;
+
             try {
-                const { data, error } = await supabaseClient.rpc('sondage_admin_get_reponses', { p_pwd: pwd });
-                if (error) throw error; // L'erreur sera déclenchée par Supabase si le mot de passe est faux
+                // Créer une session Supabase Auth
+                const { data: authData, error: authError } = await supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: pwd
+                });
 
-                // Si on arrive ici, le mot de passe est validé par la BDD !
-                secretToken = pwd;
+                if (authError) throw authError;
+
+                // Récupération sécurisée RLS avec le compte admin
+                const { data, error } = await supabaseClient.from('SONDAGE_reponses')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
                 adminDataReponses = data;
 
                 closeAdminLogin();
@@ -856,12 +880,18 @@
                 console.error("Login failed:", err);
                 pwdInput.classList.add('border-red-500');
                 setTimeout(() => pwdInput.classList.remove('border-red-500'), 1000);
+            } finally {
+                btnLogin.textContent = "Déverrouiller";
+                btnLogin.disabled = false;
             }
         }
 
         async function loadAdminIdees() {
             try {
-                const { data, error } = await supabaseClient.rpc('sondage_admin_get_idees', { p_pwd: secretToken });
+                const { data, error } = await supabaseClient.from('SONDAGE_idees')
+                    .select('*')
+                    .order('theme', { ascending: true })
+                    .order('votes', { ascending: false });
                 if (error) throw error;
                 adminDataIdees = data;
             } catch (err) { console.error("Load idées error:", err); }
@@ -928,14 +958,17 @@
 
             try {
                 if (type === 'reponse') {
-                    await supabaseClient.rpc('sondage_admin_delete_reponse', { p_pwd: secretToken, p_id: id });
+                    const { error } = await supabaseClient.from('SONDAGE_reponses').delete().eq('id', id);
+                    if (error) throw error;
                     adminDataReponses = adminDataReponses.filter(r => r.id !== id);
                 } else {
-                    await supabaseClient.rpc('sondage_admin_delete_idee', { p_pwd: secretToken, p_id: id });
+                    const { error } = await supabaseClient.from('SONDAGE_idees').delete().eq('id', id);
+                    if (error) throw error;
                     adminDataIdees = adminDataIdees.filter(i => i.id !== id);
                 }
                 renderAdminTables();
             } catch (err) {
+                console.error(err);
                 alert("Erreur de suppression.");
             }
         }
@@ -946,9 +979,11 @@
                     const record = adminDataReponses.find(r => r.id === id);
                     const newPointFort = prompt("Modifier le point fort :", record.point_fort || '');
                     if (newPointFort !== null) {
-                        await supabaseClient.rpc('sondage_admin_update_reponse', {
-                            p_pwd: secretToken, p_id: id, p_point_fort: newPointFort
-                        });
+                        const { error } = await supabaseClient.from('SONDAGE_reponses')
+                            .update({ point_fort: newPointFort })
+                            .eq('id', id);
+                        if (error) throw error;
+
                         record.point_fort = newPointFort;
                         renderAdminTables();
                     }
@@ -959,14 +994,17 @@
                     const newVotes = prompt("Modifier le nombre de votes :", record.votes);
                     if (newVotes === null || isNaN(parseInt(newVotes))) return;
 
-                    await supabaseClient.rpc('sondage_admin_update_idee', {
-                        p_pwd: secretToken, p_id: id, p_mot: newMot, p_votes: parseInt(newVotes)
-                    });
+                    const { error } = await supabaseClient.from('SONDAGE_idees')
+                        .update({ mot: newMot, votes: parseInt(newVotes) })
+                        .eq('id', id);
+                    if (error) throw error;
+
                     record.mot = newMot;
                     record.votes = parseInt(newVotes);
                     renderAdminTables();
                 }
             } catch (err) {
+                console.error(err);
                 alert("Erreur lors de la modification.");
             }
         }
