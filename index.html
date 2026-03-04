@@ -44,6 +44,107 @@
             border-radius: 20px;
         }
 
+        /* Styles pour la disposition radiale */
+        .theme-circle-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 1 / 1;
+            margin: 0 auto;
+        }
+
+        .theme-node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            width: 95px;
+            height: 95px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        @media (max-width: 500px) {
+            .theme-node {
+                width: 75px;
+                height: 75px;
+            }
+
+            .theme-node-center {
+                width: 90px !important;
+                height: 90px !important;
+            }
+
+            .theme-label {
+                font-size: 0.55rem !important;
+            }
+        }
+
+        .theme-node:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            border-color: #0ea5e9;
+            box-shadow: 0 8px 15px rgba(14, 165, 233, 0.2);
+        }
+
+        .theme-node.completed {
+            background-color: #f1f5f9;
+            color: #94a3b8;
+            box-shadow: none;
+            cursor: not-allowed;
+            border: 2px solid #e2e8f0;
+        }
+
+        .theme-node.completed:hover {
+            transform: translate(-50%, -50%);
+        }
+
+        .theme-node-center {
+            width: 120px;
+            height: 120px;
+            background: #0ea5e9;
+            color: white;
+            font-weight: bold;
+            border: 4px solid #bae6fd;
+            z-index: 20;
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+        }
+
+        .theme-node-center:hover {
+            background: #0284c7;
+            border-color: #7dd3fc;
+        }
+
+        .theme-node-center.completed {
+            background: #94a3b8;
+            border-color: #cbd5e1;
+            box-shadow: none;
+        }
+
+        .theme-label {
+            font-size: 0.65rem;
+            line-height: 1.1;
+            margin-top: 4px;
+            font-weight: 600;
+            padding: 0 4px;
+        }
+
+        .svg-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
         /* Styles spécifiques au nuage de mots */
         .word-cloud-container {
             display: flex;
@@ -135,7 +236,7 @@
                 Notre Collectivité
             </div>
             <div class="text-sm font-medium text-slate-500" id="progress-text">
-                Thèmes : <span id="completed-count">0</span>/7
+                Thèmes : <span id="completed-count">0</span>/9
             </div>
         </div>
     </header>
@@ -224,12 +325,12 @@
             <div class="step" id="step-themes">
                 <span class="text-sm font-semibold text-primary tracking-wider uppercase mb-2 block">2. À la
                     carte</span>
-                <h2 class="text-2xl font-bold mb-2 text-slate-800">Sur quels axes souhaitez-vous vous exprimer ?</h2>
-                <p class="text-slate-500 mb-8">Sélectionnez un thème pour répondre aux questions. Vous pourrez en
-                    choisir d'autres ensuite.</p>
+                <h2 class="text-2xl font-bold mb-2 text-slate-800">Vision du territoire</h2>
+                <p class="text-slate-500 mb-8">Sélectionnez le thème central (CTG) ou l'un des thèmes qui gravitent
+                    autour pour y contribuer.</p>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10" id="theme-grid">
-                    <!-- Généré par JavaScript -->
+                <div class="theme-circle-container mb-10" id="theme-circle">
+                    <!-- Nodes animés générés par JS -->
                 </div>
 
                 <div
@@ -247,120 +348,77 @@
                 </div>
             </div>
 
-            <!-- ETAPE : Bilan Eval -->
-            <div class="step" id="step-bilan-eval">
-                <span class="text-sm font-semibold text-primary tracking-wider uppercase mb-2 block">Bilan : <span
-                        class="theme-name-display"></span></span>
-                <h2 class="text-2xl font-bold mb-2 text-slate-800">Comment évaluez-vous les actions de la Communauté de
-                    Communes Marches du Velay Rochebaron durant ce mandat sur ce sujet ?</h2>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-8">
-                    <label class="relative cursor-pointer">
-                        <input type="radio" name="evaluation" value="excellente" class="peer sr-only" required
-                            onchange="autoAdvanceEval()">
-                        <div
-                            class="p-5 rounded-2xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-blue-50 transition-all flex items-center gap-4">
-                            <span class="text-3xl">🤩</span>
-                            <div class="font-semibold text-slate-700 peer-checked:text-primary">Excellente</div>
-                        </div>
-                    </label>
-                    <label class="relative cursor-pointer">
-                        <input type="radio" name="evaluation" value="satisfaisante" class="peer sr-only"
-                            onchange="autoAdvanceEval()">
-                        <div
-                            class="p-5 rounded-2xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-blue-50 transition-all flex items-center gap-4">
-                            <span class="text-3xl">🙂</span>
-                            <div class="font-semibold text-slate-700 peer-checked:text-primary">Satisfaisante</div>
-                        </div>
-                    </label>
-                    <label class="relative cursor-pointer">
-                        <input type="radio" name="evaluation" value="mitigee" class="peer sr-only"
-                            onchange="autoAdvanceEval()">
-                        <div
-                            class="p-5 rounded-2xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-blue-50 transition-all flex items-center gap-4">
-                            <span class="text-3xl">🤔</span>
-                            <div class="font-semibold text-slate-700 peer-checked:text-primary">Mitigée</div>
-                        </div>
-                    </label>
-                    <label class="relative cursor-pointer">
-                        <input type="radio" name="evaluation" value="a_ameliorer" class="peer sr-only"
-                            onchange="autoAdvanceEval()">
-                        <div
-                            class="p-5 rounded-2xl border-2 border-slate-200 peer-checked:border-primary peer-checked:bg-blue-50 transition-all flex items-center gap-4">
-                            <span class="text-3xl">🌱</span>
-                            <div class="font-semibold text-slate-700 peer-checked:text-primary">À améliorer</div>
-                        </div>
-                    </label>
-                </div>
-
+            <!-- ETAPE : Thème Transversal CTG -->
+            <div class="step" id="step-ctg">
+                <span class="text-sm font-semibold text-primary tracking-wider uppercase mb-2 block">Thème Central
+                    Transversal : CTG</span>
+                <h2 class="text-2xl font-bold mb-6 text-slate-800">À quoi devrait ressembler le territoire idéal dans la
+                    collectivité pour toutes les tranches d'âge (enfants, jeunes, familles...) d'ici 2032 ?</h2>
+                <textarea id="ctg_text" rows="5" placeholder="Votre vision du territoire idéal..."
+                    class="w-full text-lg px-5 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-colors resize-none mb-8"></textarea>
                 <div class="flex items-center justify-between pt-4 border-t border-slate-100">
                     <button type="button" onclick="goToStep('step-themes')"
-                        class="text-slate-500 hover:text-slate-800 font-medium px-4 py-2">Retour aux thèmes</button>
-                    <!-- Le bouton Suivant a été retiré, la validation se fait au clic -->
+                        class="text-slate-500 hover:text-slate-800 font-medium px-4 py-2">Retour au menu</button>
+                    <button type="button" onclick="saveCtgAndGo()"
+                        class="bg-primary hover:bg-primary_dark text-white font-semibold py-3 px-8 rounded-full shadow-md transition-all">Valider
+                        la CTG</button>
                 </div>
             </div>
 
-            <!-- ETAPE : Bilan Point Fort -->
-            <div class="step" id="step-bilan-fort">
-                <span class="text-sm font-semibold text-primary tracking-wider uppercase mb-2 block">Bilan : <span
+            <!-- ETAPE : Q1 (Texte) -->
+            <div class="step" id="step-q1">
+                <span class="text-sm font-semibold text-primary tracking-wider uppercase mb-2 block">Thème : <span
                         class="theme-name-display"></span></span>
-                <h2 class="text-2xl font-bold mb-6 text-slate-800">Quel a été, selon vous, le point fort de ce mandat
-                    sur ce thème ?</h2>
-
-                <textarea id="point_fort" rows="4" placeholder="Partagez une réussite, un projet marquant..."
+                <h2 class="text-2xl font-bold mb-6 text-slate-800">Quels changements observez-vous dans les besoins des
+                    publics sur ce thème ?</h2>
+                <textarea id="q1_text" rows="5" placeholder="Partagez vos constats, évolutions remarquées..."
                     class="w-full text-lg px-5 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-colors resize-none mb-8"></textarea>
-
                 <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-                    <button type="button" onclick="goToStep('step-bilan-eval')"
-                        class="text-slate-500 hover:text-slate-800 font-medium px-4 py-2">Précédent</button>
-                    <button type="button" onclick="prepareCloudAndGo()"
+                    <button type="button" onclick="goToStep('step-themes')"
+                        class="text-slate-500 hover:text-slate-800 font-medium px-4 py-2">Retour aux thèmes</button>
+                    <button type="button" onclick="saveQ1AndGo()"
                         class="bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 px-8 rounded-full shadow-md transition-all">Suivant</button>
                 </div>
             </div>
 
-            <!-- ETAPE : Nuage de mots -->
-            <div class="step" id="step-perspective-cloud">
-                <span class="text-sm font-semibold text-primary tracking-wider uppercase mb-2 block">Perspectives :
-                    <span class="theme-name-display"></span></span>
-                <h2 class="text-2xl font-bold mb-2 text-slate-800" id="idea-question">Quel serait pour vous l'axe
-                    principal à développer sur le prochain mandat pour ce thème ?</h2>
-                <p class="text-slate-500 mb-6 flex justify-between items-center">
+            <!-- ETAPE : Nuage de Mots Dynamique (Q2, Q3, Q4) -->
+            <div class="step" id="step-cloud">
+                <span class="text-sm font-semibold text-primary tracking-wider uppercase mb-2 block">Thème : <span
+                        class="theme-name-display"></span></span>
+                <h2 class="text-2xl font-bold mb-2 text-slate-800" id="cloud-question">Question chargée dynamiquement
+                </h2>
+                <p
+                    class="text-slate-500 mb-6 flex justify-between items-center bg-blue-50 p-3 rounded-lg border border-blue-100">
                     <span>Votez pour les mots proposés (jusqu'à 3 choix).</span>
-                    <span class="bg-blue-100 text-primary_dark font-bold px-3 py-1 rounded-full text-sm"><span
+                    <span class="bg-white text-primary_dark font-bold px-3 py-1 rounded-full text-sm shadow-sm"><span
                             id="vote-count">0</span> / 3 votes</span>
                 </p>
 
-                <!-- Conteneur du nuage -->
                 <div class="bg-white border border-slate-100 shadow-inner rounded-3xl mb-6 overflow-hidden relative">
                     <div id="word-cloud" class="word-cloud-container">
-                        <!-- Les mots seront générés ici -->
+                        <!-- Mots générés ici -->
                     </div>
                 </div>
 
-                <!-- Ajout d'une nouvelle idée -->
-                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 mb-8">
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 mb-8 shadow-sm">
                     <label for="new_idea_input" class="block text-sm font-medium text-slate-700 mb-2">Votre idée n'est
                         pas dans la liste ? Ajoutez-la ! (3 mots maximum)</label>
                     <div class="flex flex-col sm:flex-row gap-2">
-                        <input type="text" id="new_idea_input" maxlength="40" placeholder="Ex: Création de parcs..."
-                            class="flex-grow text-md px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20">
+                        <input type="text" id="new_idea_input" maxlength="40" placeholder="Ex: Nouveaux locaux..."
+                            class="flex-grow text-md px-4 py-3 border-2 border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-white">
                         <button type="button" onclick="addNewIdea()"
-                            class="bg-slate-800 hover:bg-slate-700 text-white font-medium px-6 py-3 rounded-xl transition-colors whitespace-nowrap">Ajouter
+                            class="bg-slate-800 hover:bg-slate-700 text-white font-medium px-6 py-3 rounded-xl transition-colors whitespace-nowrap shadow-sm">Ajouter
                             l'idée</button>
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-                    <button type="button" onclick="goToStep('step-bilan-fort')"
-                        class="text-slate-500 hover:text-slate-800 font-medium px-4 py-2">Précédent</button>
-                    <button type="button" onclick="submitVotes()"
-                        class="bg-primary hover:bg-primary_dark text-white font-semibold py-3 px-8 rounded-full shadow-md transition-all flex items-center justify-center gap-2">
-                        Valider la thématique
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd"
-                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                clip-rule="evenodd" />
-                        </svg>
+                <div
+                    class="flex flex-col-reverse sm:flex-row items-center justify-between pt-4 border-t border-slate-100 gap-4">
+                    <button type="button" onclick="backFromCloud()"
+                        class="w-full sm:w-auto text-slate-500 hover:text-slate-800 font-medium px-4 py-2 border border-slate-200 sm:border-none rounded-xl sm:rounded-none">Précédent</button>
+                    <button type="button" onclick="submitCloudAndGo()" id="btn-cloud-next"
+                        class="w-full sm:w-auto bg-primary hover:bg-primary_dark text-white font-semibold py-3 px-8 rounded-full shadow-md transition-all flex items-center justify-center gap-2">
+                        Suivant
                     </button>
                 </div>
             </div>
@@ -516,19 +574,18 @@
             'jeunesse': { label: 'Jeunesse (11-17 ans)', icon: '🛹' },
             'parentalite': { label: 'Soutien à la Parentalité', icon: '👨‍👩‍👧‍👦' },
             'animation_sociale': { label: 'Animation de la Vie Sociale', icon: '🤝' },
-            'acces_droits': { label: 'Accès aux Droits et Inclusion Numérique', icon: '⚖️' },
-            'logement': { label: 'Logement et Cadre de Vie', icon: '🏠' }
+            'acces_droits': { label: 'Accès Droits et Inclusion', icon: '⚖️' },
+            'logement': { label: 'Logement et Cadre de Vie', icon: '🏠' },
+            'handicap': { label: 'Handicap et Inclusion', icon: '♿' }
         };
 
-        var DEFAULT_DB = {
-            'petite_enfance': { 'Crèches': 8, 'Assistantes maternelles': 5, 'Parcs': 3, 'Relais petite enfance': 6, 'Pédiatres': 2 },
-            'enfance': { 'Cantine bio': 7, 'Activités périscolaires': 12, 'Sécurité abords école': 6, 'Soutien scolaire': 4 },
-            'jeunesse': { 'Skatepark': 15, 'Maison des jeunes': 9, 'Transports le soir': 11, 'Jobs d\'été': 8 },
-            'parentalite': { 'Ateliers parents': 4, 'Lieux d\'échange': 7, 'Soutien psychologique': 5 },
-            'animation_sociale': { 'Centres sociaux': 5, 'Bénévolat': 3, 'Événements citoyens': 8 },
-            'acces_droits': { 'Permanences juridiques': 10, 'Aide numérique': 14, 'Maison France Service': 8, 'Mobilité': 6 },
-            'logement': { 'Espaces verts': 4, 'Qualité des logements': 7, 'Rénovation énergétique': 11 }
+        var CLOUD_QUESTIONS = {
+            2: "Quelles actions ou dynamiques vous semblent particulièrement positives sur le territoire concernant ce thème ?",
+            3: "Quel point mériterait d'être créé ou amélioré sur la collectivité pour ce thème ?",
+            4: "Si vous deviez identifier des priorités majeures dans lesquelles la structure souhaite s'engager pendant ces 6 prochaines années, quelles seraient ces priorités ?"
         };
+
+        var DEFAULT_DB = {};
 
         var supabaseUrl = 'https://bnloivgpihtsxydjkgyc.supabase.co';
         var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJubG9pdmdwaWh0c3h5ZGprZ3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDY4MjIsImV4cCI6MjA4Njk4MjgyMn0.U1p2xnYLprSO8-w-6mlG9BMO4_-A916XGmsKQ5WkdEg';
@@ -540,7 +597,9 @@
             structureName: '',
             completedThemes: [],
             currentTheme: null,
-            selectedVotes: []
+            currentCloudIndex: 2,
+            selectedVotes: [],
+            q1Answer: ''
         };
 
         // --- VARIABLES ADMIN ---
@@ -554,38 +613,62 @@
         }
 
         function initThemesUI() {
-            const grid = document.getElementById('theme-grid');
-            grid.innerHTML = '';
+            const container = document.getElementById('theme-circle');
+            container.innerHTML = '';
 
-            for (const [key, data] of Object.entries(THEMES)) {
+            let svgHtml = '<svg class="svg-lines" viewBox="0 0 500 500">';
+            const themeKeys = Object.keys(THEMES);
+            const totalNodes = themeKeys.length;
+            const radius = 180;
+            const centerPos = { x: 250, y: 250 };
+
+            themeKeys.forEach((key, index) => {
+                const angle = (index * (360 / totalNodes)) * (Math.PI / 180);
+                const x = centerPos.x + radius * Math.cos(angle);
+                const y = centerPos.y + radius * Math.sin(angle);
+                svgHtml += `<line x1="250" y1="250" x2="${x}" y2="${y}" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5,5" />`;
+            });
+            svgHtml += '</svg>';
+            container.innerHTML += svgHtml;
+
+            // Center CTG
+            const isCtgCompleted = state.completedThemes.includes('ctg');
+            const ctgNode = document.createElement('div');
+            ctgNode.className = `theme-node theme-node-center ${isCtgCompleted ? 'completed' : ''}`;
+            ctgNode.style.left = '50%';
+            ctgNode.style.top = '50%';
+            ctgNode.innerHTML = `
+                <div class="text-4xl mb-1">🎯</div>
+                <div class="theme-label !text-sm text-white ${isCtgCompleted ? '!text-slate-500' : ''}">Projet CTG</div>
+            `;
+            ctgNode.onclick = () => { if (!isCtgCompleted) startCtg(); };
+            container.appendChild(ctgNode);
+
+            // Surrounding Themes
+            themeKeys.forEach((key, index) => {
+                const angle = (index * (360 / totalNodes)) * (Math.PI / 180);
+                const x = centerPos.x + radius * Math.cos(angle);
+                const y = centerPos.y + radius * Math.sin(angle);
+
                 const isCompleted = state.completedThemes.includes(key);
+                const data = THEMES[key];
 
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = `p-5 rounded-2xl border-2 text-left flex flex-col justify-center items-center gap-3 transition-all relative overflow-hidden ${isCompleted
-                    ? 'bg-slate-100 border-slate-200 cursor-not-allowed'
-                    : 'bg-white border-slate-200 hover:border-primary hover:shadow-lg hover:-translate-y-1'
-                    }`;
-                btn.onclick = () => { if (!isCompleted) startTheme(key); };
+                const node = document.createElement('div');
+                node.className = `theme-node border-2 ${isCompleted ? 'completed' : 'border-slate-200'}`;
+                node.style.left = `${(x / 500) * 100}%`;
+                node.style.top = `${(y / 500) * 100}%`;
 
-                btn.innerHTML = `
-                    <div class="text-4xl relative z-10 ${isCompleted ? 'grayscale opacity-50' : ''}">
-                        ${data.icon}
-                    </div>
-                    <div class="font-semibold text-center leading-tight z-10 ${isCompleted ? 'text-slate-400 line-through decoration-slate-300' : 'text-slate-800'}">${data.label}</div>
-                    ${isCompleted ? `
-                    <div class="absolute inset-0 bg-white/40 backdrop-blur-[1px] rounded-2xl"></div>
-                    <div class="absolute top-3 right-3 bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1 z-10 border border-green-200 shadow-sm">
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                        Traité
-                    </div>` : ''}
+                node.innerHTML = `
+                    <div class="text-3xl">${data.icon}</div>
+                    <div class="theme-label">${data.label}</div>
+                    ${isCompleted ? '<div class="absolute -top-2 -right-2 bg-green-500 border border-green-600 shadow-sm text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold z-20">✓</div>' : ''}
                 `;
-                grid.appendChild(btn);
-            }
+                node.onclick = () => { if (!isCompleted) startTheme(key); };
+                container.appendChild(node);
+            });
 
             document.getElementById('completed-count').textContent = state.completedThemes.length;
-
-            if (state.completedThemes.length === Object.keys(THEMES).length) {
+            if (state.completedThemes.length === (themeKeys.length + 1)) {
                 goToStep('step-merci');
             }
         }
@@ -651,76 +734,100 @@
         function startTheme(themeKey) {
             state.currentTheme = themeKey;
             const label = THEMES[themeKey].label;
-
             document.querySelectorAll('.theme-name-display').forEach(el => el.textContent = label);
-            document.getElementById('idea-question').textContent = `Quel serait pour vous l'axe principal à développer sur le prochain mandat pour ce thème ?`;
-
-            document.querySelectorAll('input[name="evaluation"]').forEach(r => r.checked = false);
-            document.getElementById('point_fort').value = '';
-            state.selectedVotes = [];
-
-            goToStep('step-bilan-eval');
+            document.getElementById('q1_text').value = '';
+            goToStep('step-q1');
         }
 
-        function autoAdvanceEval() {
-            setTimeout(() => { validateAndGoTo('step-bilan-eval', 'step-bilan-fort'); }, 300);
+        function startCtg() {
+            document.getElementById('ctg_text').value = '';
+            goToStep('step-ctg');
         }
 
-        async function prepareCloudAndGo() {
-            const btn = document.querySelector('#step-bilan-fort button:last-child');
+        async function saveCtgAndGo() {
+            const answer = document.getElementById('ctg_text').value.trim();
+            if (!answer) {
+                showError("Veuillez partager votre vision de la CTG.");
+                return;
+            }
+
+            const btn = document.querySelector('#step-ctg button:last-child');
             const originalText = btn.innerHTML;
-            btn.innerHTML = 'Chargement...';
+            btn.innerHTML = 'Enregistrement...';
             btn.disabled = true;
 
             try {
-                const { data, error } = await supabaseClient
-                    .from('SONDAGE_idees')
-                    .select('mot, votes')
-                    .eq('theme', state.currentTheme);
-
+                const { error } = await supabaseClient.from('SONDAGE_reponses').insert([{
+                    structure_name: state.structureName,
+                    theme: 'ctg',
+                    evaluation: 'N/A',
+                    point_fort: answer
+                }]);
                 if (error) throw error;
 
-                wordCloudDB[state.currentTheme] = {};
-
-                if (data && data.length > 0) {
-                    data.forEach(item => { wordCloudDB[state.currentTheme][item.mot] = item.votes; });
-                } else {
-                    wordCloudDB[state.currentTheme] = JSON.parse(JSON.stringify(DEFAULT_DB[state.currentTheme] || {}));
-                }
-
-                renderWordCloud();
-                goToStep('step-perspective-cloud');
+                if (!state.completedThemes.includes('ctg')) state.completedThemes.push('ctg');
+                goToStep('step-themes');
             } catch (err) {
-                console.error("Erreur :", err);
-                showError("Problème de connexion.");
+                console.error(err);
+                showError("Erreur d'enregistrement.");
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         }
 
+        function saveQ1AndGo() {
+            state.q1Answer = document.getElementById('q1_text').value.trim();
+            loadCloudQuestion(2);
+        }
+
+        async function loadCloudQuestion(index) {
+            state.currentCloudIndex = index;
+            document.getElementById('cloud-question').textContent = CLOUD_QUESTIONS[index];
+            state.selectedVotes = [];
+
+            const btn = document.getElementById('btn-cloud-next');
+            btn.innerHTML = index === 4 ? `Valider la thématique <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>` : 'Suivant';
+
+            const dbThemeKey = state.currentTheme + '_q' + index;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('SONDAGE_idees')
+                    .select('mot, votes')
+                    .eq('theme', dbThemeKey);
+
+                if (error) throw error;
+                wordCloudDB[dbThemeKey] = {};
+
+                if (data && data.length > 0) {
+                    data.forEach(item => { wordCloudDB[dbThemeKey][item.mot] = item.votes; });
+                }
+
+                renderWordCloud();
+                goToStep('step-cloud');
+            } catch (err) {
+                console.error("Erreur cloud:", err);
+                showError("Problème de connexion au nuage de mots.");
+            }
+        }
+
         function addNewIdea() {
             const input = document.getElementById('new_idea_input');
             const idea = input.value.trim();
-
             if (!idea) {
                 showError("Veuillez écrire une idée.");
-                input.classList.add('border-red-400');
-                setTimeout(() => input.classList.remove('border-red-400'), 2000);
                 return;
             }
-
             const cleanIdea = idea.charAt(0).toUpperCase() + idea.slice(1).toLowerCase();
+            const dbThemeKey = state.currentTheme + '_q' + state.currentCloudIndex;
 
-            if (!wordCloudDB[state.currentTheme]) wordCloudDB[state.currentTheme] = {};
-            if (wordCloudDB[state.currentTheme][cleanIdea] === undefined) wordCloudDB[state.currentTheme][cleanIdea] = 0;
+            if (!wordCloudDB[dbThemeKey]) wordCloudDB[dbThemeKey] = {};
+            if (wordCloudDB[dbThemeKey][cleanIdea] === undefined) wordCloudDB[dbThemeKey][cleanIdea] = 0;
 
             if (state.selectedVotes.length < 3 && !state.selectedVotes.includes(cleanIdea)) {
                 state.selectedVotes.push(cleanIdea);
-            } else if (!state.selectedVotes.includes(cleanIdea)) {
-                showError("Idée ajoutée, mais vous avez déjà utilisé vos 3 votes !");
             }
-
             input.value = '';
             renderWordCloud();
         }
@@ -730,7 +837,8 @@
             container.innerHTML = '';
             document.getElementById('vote-count').textContent = state.selectedVotes.length;
 
-            const wordsObj = wordCloudDB[state.currentTheme] || {};
+            const dbThemeKey = state.currentTheme + '_q' + state.currentCloudIndex;
+            const wordsObj = wordCloudDB[dbThemeKey] || {};
             const wordsArray = Object.entries(wordsObj);
 
             if (wordsArray.length === 0) {
@@ -739,6 +847,7 @@
             }
 
             const maxVotes = Math.max(...wordsArray.map(w => w[1]), 1);
+
             wordsArray.sort(() => Math.random() - 0.5);
 
             wordsArray.forEach(([word, count]) => {
@@ -752,11 +861,8 @@
                 span.style.opacity = opacity;
                 span.textContent = word;
 
-                if (state.selectedVotes.includes(word)) {
-                    span.classList.add('selected');
-                } else if (state.selectedVotes.length >= 3) {
-                    span.classList.add('disabled');
-                }
+                if (state.selectedVotes.includes(word)) span.classList.add('selected');
+                else if (state.selectedVotes.length >= 3) span.classList.add('disabled');
 
                 span.onclick = () => toggleWordVote(span, word);
                 container.appendChild(span);
@@ -765,7 +871,6 @@
 
         function toggleWordVote(element, word) {
             const isSelected = element.classList.contains('selected');
-
             if (isSelected) {
                 element.classList.remove('selected');
                 state.selectedVotes = state.selectedVotes.filter(w => w !== word);
@@ -777,7 +882,6 @@
                 element.classList.add('selected');
                 state.selectedVotes.push(word);
             }
-
             document.getElementById('vote-count').textContent = state.selectedVotes.length;
 
             const allWords = document.querySelectorAll('.word-tag');
@@ -788,42 +892,51 @@
             }
         }
 
-        async function submitVotes() {
-            const btn = document.querySelector('#step-perspective-cloud button:last-child');
+        function backFromCloud() {
+            if (state.currentCloudIndex === 2) goToStep('step-q1');
+            else if (state.currentCloudIndex === 3) loadCloudQuestion(2);
+            else if (state.currentCloudIndex === 4) loadCloudQuestion(3);
+        }
+
+        async function submitCloudAndGo() {
+            const btn = document.getElementById('btn-cloud-next');
             const originalText = btn.innerHTML;
-            btn.innerHTML = 'Enregistrement...';
+            btn.innerHTML = 'Chargement...';
             btn.disabled = true;
 
+            const dbThemeKey = state.currentTheme + '_q' + state.currentCloudIndex;
+
             try {
-                const evaluation = document.querySelector('input[name="evaluation"]:checked')?.value;
-                const pointFort = document.getElementById('point_fort').value.trim();
-
-                const { error: repError } = await supabaseClient.from('SONDAGE_reponses').insert([{
-                    structure_name: state.structureName,
-                    theme: state.currentTheme,
-                    evaluation: evaluation,
-                    point_fort: pointFort
-                }]);
-
-                if (repError) throw repError;
-
                 for (const word of state.selectedVotes) {
-                    const { error: voteError } = await supabaseClient.rpc('sondage_voter_idee', {
-                        p_theme: state.currentTheme,
+                    const { error } = await supabaseClient.rpc('sondage_voter_idee', {
+                        p_theme: dbThemeKey,
                         p_mot: word
                     });
-                    if (voteError) throw voteError;
+                    if (error) throw error;
                 }
 
-                if (!state.completedThemes.includes(state.currentTheme)) {
-                    state.completedThemes.push(state.currentTheme);
+                if (state.currentCloudIndex === 2) {
+                    loadCloudQuestion(3);
+                } else if (state.currentCloudIndex === 3) {
+                    loadCloudQuestion(4);
+                } else if (state.currentCloudIndex === 4) {
+                    const textQ1 = state.q1Answer || "N/A";
+                    const { error: repError } = await supabaseClient.from('SONDAGE_reponses').insert([{
+                        structure_name: state.structureName,
+                        theme: state.currentTheme,
+                        evaluation: 'N/A',
+                        point_fort: textQ1
+                    }]);
+                    if (repError) throw repError;
+
+                    if (!state.completedThemes.includes(state.currentTheme)) {
+                        state.completedThemes.push(state.currentTheme);
+                    }
+                    goToStep('step-themes');
                 }
-
-                goToStep('step-themes');
-
             } catch (err) {
-                console.error("Erreur de sauvegarde :", err);
-                showError("Erreur lors de l'enregistrement. Veuillez réessayer.");
+                console.error(err);
+                showError("Erreur d'enregistrement.");
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
@@ -939,7 +1052,7 @@
                 tr.innerHTML = `
                     <td class="py-3 px-2">${date}</td>
                     <td class="py-3 px-2 font-medium">${row.structure_name}</td>
-                    <td class="py-3 px-2">${THEMES[row.theme]?.label || row.theme}</td>
+                    <td class="py-3 px-2">${THEMES[row.theme]?.label || (row.theme === 'ctg' ? 'Transversal CTG' : row.theme)}</td>
                     <td class="py-3 px-2 capitalize">${row.evaluation}</td>
                     <td class="py-3 px-2 max-w-xs truncate" title="${row.point_fort || ''}">${row.point_fort || '-'}</td>
                     <td class="py-3 px-2 text-right">
@@ -954,10 +1067,25 @@
             const tbodyIdees = document.getElementById('tbody-idees');
             tbodyIdees.innerHTML = '';
             adminDataIdees.forEach(row => {
+                let themeLabel = row.theme;
+                if (themeLabel && themeLabel.includes('_q')) {
+                    const parts = themeLabel.split('_q');
+                    const t = parts[0];
+                    const q = parts[1];
+                    const baseLabel = THEMES[t]?.label || (t === 'ctg' ? 'Transversal CTG' : t);
+                    let qLabel = '';
+                    if (q === '2') qLabel = ' (Actions Positives)';
+                    if (q === '3') qLabel = ' (À Créer)';
+                    if (q === '4') qLabel = ' (Engagements)';
+                    themeLabel = baseLabel + qLabel;
+                } else {
+                    themeLabel = THEMES[row.theme]?.label || (row.theme === 'ctg' ? 'Transversal CTG' : row.theme);
+                }
+
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-slate-100 hover:bg-slate-100/50 transition-colors";
                 tr.innerHTML = `
-                    <td class="py-3 px-2">${THEMES[row.theme]?.label || row.theme}</td>
+                    <td class="py-3 px-2">${themeLabel}</td>
                     <td class="py-3 px-2 font-medium">${row.mot}</td>
                     <td class="py-3 px-2"><span class="bg-blue-100 text-primary_dark px-2 py-1 rounded-md font-bold">${row.votes}</span></td>
                     <td class="py-3 px-2 text-right">
@@ -965,7 +1093,7 @@
                         <button onclick="deleteAdminRecord('idee', '${row.id}')" class="text-red-500 hover:text-red-700 text-sm">Suppr.</button>
                     </td>
                 `;
-                tbodyIdees.appendChild(tr);
+                document.getElementById('tbody-idees').appendChild(tr);
             });
         }
 
