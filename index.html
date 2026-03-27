@@ -265,7 +265,7 @@
                                 d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                     </div>
-                    <h1 class="text-3xl sm:text-4xl font-bold mb-4 text-slate-900">Bilan & Perspectives</h1>
+                    <h1 class="text-3xl sm:text-4xl font-bold mb-4 text-slate-900">Bilan & Perspectives CTG</h1>
                     <p class="text-lg text-slate-600 mb-8 leading-relaxed max-w-lg mx-auto">
                         Votre avis de partenaire est précieux. Nous vous proposons de choisir les thématiques sur
                         lesquelles vous souhaitez contribuer pour évaluer notre action et imaginer le futur.
@@ -352,8 +352,9 @@
             <div class="step" id="step-ctg">
                 <span class="text-sm font-semibold text-primary tracking-wider uppercase mb-2 block">Thème Central
                     Transversal : CTG</span>
-                <h2 class="text-2xl font-bold mb-6 text-slate-800">À quoi devrait ressembler le territoire idéal dans la
-                    collectivité pour toutes les tranches d'âge (enfants, jeunes, familles...) d'ici 2032 ?</h2>
+                <h2 class="text-2xl font-bold mb-6 text-slate-800">Selon vous, à quoi devrait ressembler le territoire
+                    idéal (au niveau de la collectivité) pour toutes les tranches d'âge (enfants, jeunes, familles...)
+                    d'ici 2032 ?</h2>
                 <textarea id="ctg_text" rows="5" placeholder="Votre vision du territoire idéal..."
                     class="w-full text-lg px-5 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-colors resize-none mb-8"></textarea>
                 <div class="flex items-center justify-between pt-4 border-t border-slate-100">
@@ -369,8 +370,8 @@
             <div class="step" id="step-q1">
                 <span class="text-sm font-semibold text-primary tracking-wider uppercase mb-2 block">Thème : <span
                         class="theme-name-display"></span></span>
-                <h2 class="text-2xl font-bold mb-6 text-slate-800">Quels changements observez-vous dans les besoins des
-                    publics sur ce thème ?</h2>
+                <h2 class="text-2xl font-bold mb-6 text-slate-800">Quels changements observez-vous concernant les
+                    besoins des publics sur le thème <span class="text-primary theme-name-display-inline"></span> ?</h2>
                 <textarea id="q1_text" rows="5" placeholder="Partagez vos constats, évolutions remarquées..."
                     class="w-full text-lg px-5 py-4 border-2 border-slate-200 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-colors resize-none mb-8"></textarea>
                 <div class="flex items-center justify-between pt-4 border-t border-slate-100">
@@ -534,8 +535,7 @@
                                 <th class="pb-3 px-2">Date</th>
                                 <th class="pb-3 px-2">Structure</th>
                                 <th class="pb-3 px-2">Thème</th>
-                                <th class="pb-3 px-2">Évaluation</th>
-                                <th class="pb-3 px-2">Point Fort</th>
+                                <th class="pb-3 px-2">Besoins / Constats</th>
                                 <th class="pb-3 px-2 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -580,9 +580,9 @@
         };
 
         var CLOUD_QUESTIONS = {
-            2: "Quelles actions ou dynamiques vous semblent particulièrement positives sur le territoire concernant ce thème ?",
-            3: "Quel point mériterait d'être créé ou amélioré sur la collectivité pour ce thème ?",
-            4: "Si vous deviez identifier des priorités majeures dans lesquelles la structure souhaite s'engager pendant ces 6 prochaines années, quelles seraient ces priorités ?"
+            2: "Quelles actions ou dynamiques vous semblent particulièrement positives sur le territoire concernant le thème {theme} ?",
+            3: "Quelle action mériterait d'être créée ou améliorée sur la collectivité pour le thème {theme} ?",
+            4: "Si vous deviez identifier des priorités majeures dans lesquelles vous souhaiteriez vous engager pendant ces 6 prochaines années, quelles seraient ces priorités (pour le thème {theme}) ?"
         };
 
         var DEFAULT_DB = {};
@@ -735,6 +735,7 @@
             state.currentTheme = themeKey;
             const label = THEMES[themeKey].label;
             document.querySelectorAll('.theme-name-display').forEach(el => el.textContent = label);
+            document.querySelectorAll('.theme-name-display-inline').forEach(el => el.textContent = label);
             document.getElementById('q1_text').value = '';
             goToStep('step-q1');
         }
@@ -783,7 +784,8 @@
 
         async function loadCloudQuestion(index) {
             state.currentCloudIndex = index;
-            document.getElementById('cloud-question').textContent = CLOUD_QUESTIONS[index];
+            const themeLabel = THEMES[state.currentTheme].label;
+            document.getElementById('cloud-question').innerHTML = CLOUD_QUESTIONS[index].replace('{theme}', `<span class="text-primary">${themeLabel}</span>`);
             state.selectedVotes = [];
 
             const btn = document.getElementById('btn-cloud-next');
@@ -1053,7 +1055,6 @@
                     <td class="py-3 px-2">${date}</td>
                     <td class="py-3 px-2 font-medium">${row.structure_name}</td>
                     <td class="py-3 px-2">${THEMES[row.theme]?.label || (row.theme === 'ctg' ? 'Transversal CTG' : row.theme)}</td>
-                    <td class="py-3 px-2 capitalize">${row.evaluation}</td>
                     <td class="py-3 px-2 max-w-xs truncate" title="${row.point_fort || ''}">${row.point_fort || '-'}</td>
                     <td class="py-3 px-2 text-right">
                         <button onclick="editAdminRecord('reponse', '${row.id}')" class="text-blue-500 hover:text-blue-700 text-sm mr-2">Éditer</button>
@@ -1121,7 +1122,7 @@
             try {
                 if (type === 'reponse') {
                     const record = adminDataReponses.find(r => r.id === id);
-                    const newPointFort = prompt("Modifier le point fort :", record.point_fort || '');
+                    const newPointFort = prompt("Modifier les besoins / constats :", record.point_fort || '');
                     if (newPointFort !== null) {
                         const { error } = await supabaseClient.from('SONDAGE_reponses')
                             .update({ point_fort: newPointFort })
